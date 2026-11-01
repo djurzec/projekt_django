@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edytuj ofertę - {{ offer.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">Winylove</a>
+        </div>
+    </nav>
+
+    <div class="container mb-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-8">
+                <a href="{% url 'offer_detail' offer.id %}" class="btn btn-outline-secondary mb-4">⬅ Wróć do oferty</a>
+                
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4 fw-bold text-warning">Edytuj ogłoszenie</h2>
+                        <h5 class="text-center text-muted mb-5">Wprowadzasz zmiany w płycie: <strong>{{ offer.title }}</strong></h5>
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ form.non_field_errors|striptags }}
+                            </div>
+                        {% endif %}
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            {% for field in form %}
+                                <div class="mb-4">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                                        {{ field.label }}
+                                    </label>
+                                    
+                                    {{ field }}
+                                    
+                                    {% if field.name == 'images' %}
+                                        <div class="form-text text-muted">
+                                            Aby dodać nowe zdjęcia (dołączą do obecnych), przytrzymaj klawisz Ctrl (lub Command) i kliknij na pliki.
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            
+                            <div class="d-grid gap-2 mt-5">
+                                <button type="submit" class="btn btn-warning btn-lg shadow fw-bold">Zapisz zmiany</button>
+                            </div>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

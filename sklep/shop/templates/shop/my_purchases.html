@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Moje zakupy - Winylove</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">Winylove</a>
+            <div class="d-flex align-items-center">
+                <a href="{% url 'my_purchases' %}" class="btn btn-outline-light btn-sm me-2">Moje zakupy</a>
+                <a href="{% url 'my_sales' %}" class="btn btn-outline-light btn-sm me-2">Moja sprzedaż</a>
+                <a href="{% url 'user_profile' user.username %}" class="btn btn-outline-light btn-sm me-2">Mój profil</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <h2 class="mb-4 fw-bold text-primary">Kupione przez Ciebie płyty</h2>
+        
+        <div class="list-group shadow-sm">
+            {% for order in orders %}
+                <div class="list-group-item p-4">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1 fw-bold">{{ order.cd.title }} - {{ order.cd.artist.name }}</h5>
+                            <p class="mb-1 text-muted">Kwota: <strong>{{ order.cd.price }} zł</strong> | Sprzedawca: {{ order.cd.seller.username }}</p>
+                            <small class="text-muted">Zamówiono: {{ order.order_date|date:"d M Y, H:i" }}</small>
+                        </div>
+                        <div class="text-end">
+                            {% if order.status == 'PENDING' %}
+                                <span class="badge bg-warning text-dark mb-2 fs-6 d-block">Oczekuje na płatność</span>
+                                <a href="{% url 'pay_order' order.id %}" class="btn btn-success btn-sm w-100">Opłać teraz</a>
+                            {% elif order.status == 'PAID' %}
+                                <span class="badge bg-info text-dark fs-6">Opłacone, czeka na wysyłkę</span>
+                            {% elif order.status == 'SHIPPED' %}
+                                <span class="badge bg-success fs-6">Wysłane!</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-secondary text-center p-5">
+                    Nie kupiłeś jeszcze żadnej płyty. <a href="{% url 'home' %}">Wróć na stronę główną</a>, aby coś znaleźć!
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

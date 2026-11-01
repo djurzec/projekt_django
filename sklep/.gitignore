@@ -1,0 +1,18 @@
+# Cache Pythona (to te pliki, o które pytałaś!)
+__pycache__/
+*.py[cod]
+*$py.class
+ 
+# Środowisko wirtualne (jeśli używasz)
+venv/
+env/
+.venv/
+ 
+# Pliki systemowe (np. na komputerach Mac lub Windows)
+.DS_Store
+Thumbs.db
+
+# dane o aktualnych ofertach (z poziomu komendy w terminalu)
+.csv
+
+ 

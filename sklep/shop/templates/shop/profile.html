@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil użytkownika - {{ profile_user.username }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">Winylove</a>
+        
+        <div class="d-flex align-items-center">
+            {% if user.is_authenticated %}
+                <span class="text-white me-3">Witaj, {{ user.username }}!</span>
+                <a href="{% url 'user_profile' user.username %}" class="btn btn-outline-light btn-sm me-2">Mój profil</a>
+                <a href="{% url 'add_cd' %}" class="btn btn-success btn-sm me-2">+ Dodaj ogłoszenie</a>
+                
+                <form action="{% url 'logout' %}" method="post" class="m-0 p-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Wyloguj</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Zaloguj się</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Zarejestruj się</a>
+            {% endif %}
+        </div>
+    </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="row">
+            
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm border-0 mb-5">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-primary">{{ profile_user.username }}</h3>
+                        <p class="text-muted">Na portalu od: {{ profile_user.date_joined|date:"d M Y" }}</p>
+                        <hr>
+                        
+                        <div class="text-start">
+                            <h6 class="fw-bold">Dane kontaktowe:</h6>
+                            
+                            {% if user_details %}
+                                <p class="mb-1"><strong>Telefon:</strong> {{ user_details.phone_number|default:"Brak" }}</p>
+                            {% else %}
+                                <p class="text-muted">Użytkownik nie podał danych kontaktowych.</p>
+                            {% endif %}
+                            
+                            <p class="mb-1 mt-3"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="mb-4">Opinie o sprzedawcy ({{ comments.count }}):</h5>
+        
+                    {% if user.is_authenticated %}
+                        {% if user != profile_user %}
+                            <div class="card shadow-sm border-0 mb-4 bg-white">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">Zostaw opinię:</h6>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        {{ comment_form.as_p }}
+                                        <div class="text-end mt-2">
+                                            <button type="submit" class="btn btn-primary btn-sm">Opublikuj opinię</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted small text-center mb-4">
+                                <em>To jest Twój profil, nie możesz wystawiać opinii samemu sobie.</em>
+                            </p>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-secondary text-center mb-4 small">
+                            Aby dodać opinię, musisz się <a href="{% url 'login' %}">zalogować</a>.
+                        </div>
+                    {% endif %}
+        
+                    <div class="list-group shadow-sm">
+                        {% for comment in comments %}
+                            <div class="list-group-item border-0 border-bottom p-3 bg-white">
+                                <div class="d-flex w-100 justify-content-between mb-1">
+                                    <h6 class="mb-0 fw-bold text-primary">
+                                        <a href="{% url 'user_profile' comment.author.username %}" class="text-decoration-none">
+                                            {{ comment.author.username }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted" style="font-size: 0.75rem;">{{ comment.created_at|date:"d M Y" }}</small>
+                                </div>
+                                <p class="mb-0 small">{{ comment.content }}</p>
+                            </div>
+                        {% empty %}
+                            <div class="list-group-item border-0 p-4 text-center text-muted bg-white small">
+                                Brak opinii o tym sprzedawcy. Bądź pierwszą osobą, która oceni transakcję!
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <h4 class="mb-4">Oferty sprzedawcy ({{ offers.count }}):</h4>
+                
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for cd in offers %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0">
+                            {% if cd.images.first %}
+                                <img src="{{ cd.images.first.image.url }}" class="card-img-top" alt="Okładka płyty {{ cd.title }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light text-muted d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <span class="fs-1" style="font-size: 3rem !important;">💿</span>
+                                </div>
+                            {% endif %}
+
+                            <div class="card-body">
+                                <h5 class="card-title text-primary fw-bold">{{ cd.title }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ cd.artist.name }}</h6>
+                                <p class="card-text mb-1"><span class="fs-5 text-success fw-bold">{{ cd.price }} zł</span></p>
+                            </div>
+                            <div class="card-footer bg-white border-top-0 pb-3">
+                                <div class="d-grid">
+                                    <a href="{% url 'offer_detail' cd.id %}" class="btn btn-outline-primary">Zobacz szczegóły</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-muted">Ten użytkownik nie wystawił jeszcze żadnych płyt.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

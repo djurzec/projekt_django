@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giełda Płyt CD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">Winylove (CD)</a>
+        
+        <div class="d-flex align-items-center">
+            {% if user.is_authenticated %}
+                <span class="text-white me-3">Witaj, {{ user.username }}!</span>
+                
+                <a href="{% url 'my_purchases' %}" class="btn btn-outline-info btn-sm me-2">Moje zakupy</a>
+                <a href="{% url 'my_sales' %}" class="btn btn-outline-warning btn-sm me-2">Moja sprzedaż</a>
+                
+                <a href="{% url 'user_profile' user.username %}" class="btn btn-outline-light btn-sm me-2">Mój profil</a>
+                <a href="{% url 'add_cd' %}" class="btn btn-success btn-sm me-2">+ Dodaj ogłoszenie</a>
+                
+                <form action="{% url 'logout' %}" method="post" class="m-0 p-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Wyloguj</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Zaloguj się</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Zarejestruj się</a>
+            {% endif %}
+        </div>
+    </div>
+    </nav>
+
+    <div class="container mb-5">
+        <h1 class="text-center mb-4 text-secondary">Ostatnio dodane płyty</h1>
+        
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8">
+                <form method="GET" action="{% url 'home' %}" class="d-flex shadow-sm rounded">
+                    <input class="form-control form-control-lg me-2 border-1" type="search" name="q" 
+                           placeholder="Wpisz tytuł płyty lub wykonawcę..." aria-label="Szukaj" 
+                           value="{{ search_query|default_if_none:'' }}">
+                    
+                    <button class="btn btn-primary btn-lg px-4" type="submit">Szukaj</button>
+                    
+                    {% if search_query %}
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg ms-2">Wyczyść</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        
+        {% if search_query and not cds %}
+        <div class="alert alert-warning text-center" role="alert">
+            Niestety, nie znaleźliśmy żadnych płyt dla frazy: <strong>"{{ search_query }}"</strong>.
+        </div>
+        {% endif %}
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            
+            {% for cd in cds %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-3 hover-shadow">
+                    
+                    {% if cd.images.first %}
+                        <img src="{{ cd.images.first.image.url }}" class="card-img-top" alt="Okładka płyty {{ cd.title }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light text-muted d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <span class="fs-1" style="font-size: 4rem !important;">💿</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title text-primary fw-bold">{{ cd.title }}</h5>
+                        <h6 class="card-subtitle mb-3 text-muted">Wykonawca: {{ cd.artist.name }}</h6>
+                        
+                        <p class="card-text mb-1">
+                            <span class="fs-4 text-success fw-bold">{{ cd.price }} zł</span>
+                        </p>
+                        
+                        <p class="card-text mb-2">
+                            Stan: 
+                            {% if cd.condition == 'NEW' %}
+                                <span class="badge bg-success">Nowa</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Używana</span>
+                            {% endif %}
+                        </p>
+                        
+                        <p class="card-text text-muted small">
+                            Wystawia: 
+                            <strong>
+                                <a href="{% url 'user_profile' cd.seller.username %}" class="text-decoration-none">
+                                    {{ cd.seller.username }}
+                                </a>
+                            </strong>
+                        </p>
+                    </div>
+                    
+                    <div class="card-footer bg-white border-top-0 pb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'offer_detail' cd.id %}" class="btn btn-outline-primary">Zobacz szczegóły</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% empty %}
+            <div class="col-12 text-center mt-5">
+                {% if not search_query %}
+                <div class="alert alert-info py-4 shadow-sm" role="alert">
+                    <h4 class="alert-heading">Pusto tutaj!</h4>
+                    <p class="mb-0">Brak ofert w tej chwili. Bądź pierwszą osobą, która wystawi płytę na sprzedaż!</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+        </div>
+    </div>
+
+</body>
+</html>
